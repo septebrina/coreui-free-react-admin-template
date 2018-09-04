@@ -365,22 +365,26 @@ function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-var elements = 27;
+var elements = 8;
 var data1 = [];
 var data2 = [];
 var data3 = [];
+var data4 = [];
+var data5 = [];
 
 for (var i = 0; i <= elements; i++) {
   data1.push(random(50, 200));
   data2.push(random(80, 100));
   data3.push(65);
+  data4.push(10*i);
+  data5.push(30);
 }
 
 const mainChart = {
-  labels: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+  labels: ['1', '2', '3', '4', '5', '6', '7', '8'],
   datasets: [
     {
-      label: 'My First dataset',
+      label: 'PSU',
       backgroundColor: hexToRgba(brandInfo, 10),
       borderColor: brandInfo,
       pointHoverBackgroundColor: '#fff',
@@ -388,7 +392,7 @@ const mainChart = {
       data: data1,
     },
     {
-      label: 'My Second dataset',
+      label: 'DSP',
       backgroundColor: 'transparent',
       borderColor: brandSuccess,
       pointHoverBackgroundColor: '#fff',
@@ -396,13 +400,31 @@ const mainChart = {
       data: data2,
     },
     {
-      label: 'My Third dataset',
+      label: 'AFE',
       backgroundColor: 'transparent',
       borderColor: brandDanger,
       pointHoverBackgroundColor: '#fff',
       borderWidth: 1,
       borderDash: [8, 5],
       data: data3,
+    },
+    {
+      label: 'PA0',
+      backgroundColor: 'transparent',
+      borderColor: brandDanger,
+      pointHoverBackgroundColor: '#fff',
+      borderWidth: 1,
+      borderDash: [8, 5],
+      data: data4,
+    },
+    {
+      label: 'PA1',
+      backgroundColor: 'transparent',
+      borderColor: brandDanger,
+      pointHoverBackgroundColor: '#fff',
+      borderWidth: 1,
+      borderDash: [8, 5],
+      data: data5,
     },
   ],
 };
@@ -451,17 +473,193 @@ const mainChartOpts = {
   },
 };
 
+var timerInterval = 5000; // In msec
 class Dashboard extends Component {
   constructor(props) {
     super(props);
 
+    this.timer = 0;
     this.toggle = this.toggle.bind(this);
     this.onRadioBtnClick = this.onRadioBtnClick.bind(this);
+    this.getTimeStamp = this.getTimeStamp.bind(this);
+    this.startTimer = this.startTimer.bind(this);
+    this.getData = this.getData.bind(this);
+    // this.download = this.download.bind(this);
+    // this._saveBlob = this._saveBlob.bind(this);
+    // this._html5Saver = this._html5Saver.bind(this);
+
+    // var reader = window.FileReader();
 
     this.state = {
       dropdownOpen: false,
       radioSelected: 2,
+      index: 0,
+      data1: data1,
+      data2: data2,
+      data3: data3,
+      data4: data4,
+      data5: data5
     };
+  }
+
+  startTimer() {
+    if (this.timer == 0) {
+      this.timer = setInterval(this.getData, timerInterval);
+    }
+  }
+
+  componentWillMount() {
+    // this.download('http://167.205.24.37:8000/cgi-bin/log.sh', 'dump.txt');
+    console.log("willmount");
+    this.startTimer();
+  }
+
+  componentWillUnmount() {
+  }
+
+  componentDidMount() {
+    clearInterval(this.timer.interval);
+  }
+
+
+  // Get CGI data from server
+  getCGI() {
+    // Remove one second, set state so a re-render happens.
+    let seconds = this.state.seconds - 1;
+    this.setState({
+      time: this.secondsToTime(seconds),
+      seconds: seconds,
+    });
+    
+    // Check if we're at zero.
+    if (seconds == 0) { 
+      clearInterval(this.timer);
+    }
+  }
+
+//   download(url, fileName) {
+//     var xhr = new XMLHttpRequest();
+//     xhr.open('GET', url, true);
+//     xhr.responseType = 'blob';
+//     console.log("Downloading");
+
+//     xhr.onprogress = function(event) {
+//         if (event.lengthComputable) {
+//             var percentComplete = (event.loaded / event.total)*100;
+//             //yourShowProgressFunction(percentComplete);
+//             console.log("Progress ", percentComplete);
+//         } 
+//     };
+
+//     xhr.onload = function(event) {
+//         if (this.status == 200) {
+//             this._saveBlob(this.response, fileName);
+//             console.log("Saving ", this.response);
+//         }
+//         else {
+//             //yourErrorFunction()
+//             console.log("Error onload");
+//         }
+//     };
+
+//     xhr.onerror = function(event){
+//         //yourErrorFunction()
+//         console.log("Error");
+//     };
+
+//     xhr.send();
+// }
+
+//   _saveBlob(response, fileName) {
+//     if(navigator.msSaveBlob){
+//         //OK for IE10+
+//         navigator.msSaveBlob(response, fileName);
+//     }
+//     else{
+//         this._html5Saver(response, fileName);
+//     }
+//   }
+  
+//   _html5Saver(blob , fileName) {
+//     var a = document.createElement("a");
+//     document.body.appendChild(a);
+//     a.style = "display: none";
+//     var url = window.URL.createObjectURL(blob);
+//     a.href = url;
+//     a.download = fileName;
+//     a.click();
+//     document.body.removeChild(a);
+// }
+
+  getData()
+  {
+    // console.log("test");
+    // fetch('http://167.205.24.37:8000/cgi-bin/log.sh')
+    // // .then(res => res.json())
+    // .then(data => console.log(data));
+
+
+    // // var proxyUrl = 'http://localhost:3000/';
+    // var proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    // var targetUrl = 'http://google.com';
+    // fetch(proxyUrl + targetUrl)
+    //   // .then(data => console.log(data))
+    //   .then(blob => blob.json())
+    //   .then(data => {
+    //     console.table(data);
+    //     document.querySelector("pre").innerHTML = JSON.stringify(data, null, 2);
+    //     return data;
+    //   })
+    //   .catch(e => {
+    //     console.log(e);
+    //     return e;
+    //   });
+
+    // fetch("http://167.205.24.37:8000/cgi-bin/log.sh", {
+    //   method: 'GET',
+    //   headers: {
+    //       Accept: "application/json",
+    //   }})
+    //   .then(results => {
+    //     console.log("Result",);
+    //       if(!results.ok) {
+    //           throw Error('Network request failed')
+    //       }
+    //       return results.json();
+    //   })
+    //   .then(data => {
+    //   //   let pictures = data.results.map((pic) => {
+    //   //     return (
+    //   //       <div key={pic.results}>
+    //   //       <img src={pic.picture.medium} />
+    //   //       </div>
+    //   //     )
+    //   // })
+    //   console.log("Data", data);
+    // });
+
+    // Somehow, we want to update the result to invoke rendering
+    var index = this.state.index;
+    // Move right 1 every time
+    var newData1 = this.state.data1.slice(1, elements).concat(this.state.data1.slice(0, 1));
+    var newData2 = this.state.data2.slice(1, elements).concat(this.state.data2.slice(0, 1));
+    var newData3 = this.state.data3.slice(1, elements).concat(this.state.data3.slice(0, 1));
+    var newData4 = this.state.data4.slice(1, elements).concat(this.state.data4.slice(0, 1));
+    var newData5 = this.state.data5.slice(1, elements).concat(this.state.data5.slice(0, 1));
+    index++;
+    if(index == elements)
+    {
+      index = 0;
+    }
+
+    this.setState({
+      data1: newData1, 
+      data2: newData2, 
+      data3: newData3, 
+      data4: newData4, 
+      data5: newData5,
+      index: index
+    });
   }
 
   toggle() {
@@ -476,8 +674,27 @@ class Dashboard extends Component {
     });
   }
 
-  render() {
+  getTimeStamp() {
+    var now = new Date();
+    var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    var months = [ "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December" ];
+    return (days[now.getDay()] + ', '+ months[now.getMonth()] + ' ' + (now.getDate()) + ', ' +
+    now.getFullYear());
+  }
 
+  render() {
+    // Update all data here 
+    console.log("Render", this.state.data4);
+    for(var i = 0; i < 8; i++)
+    {
+      mainChart.datasets[0].data[i] = this.state.data1[i];
+      mainChart.datasets[1].data[i] = this.state.data2[i];
+      mainChart.datasets[2].data[i] = this.state.data3[i];
+      mainChart.datasets[3].data[i] = this.state.data4[i];
+      mainChart.datasets[4].data[i] = this.state.data5[i];
+    }
+    
     return (
       <div className="animated fadeIn">
         <Row>
@@ -584,8 +801,8 @@ class Dashboard extends Component {
               <CardBody>
                 <Row>
                   <Col sm="5">
-                    <CardTitle className="mb-0">Traffic</CardTitle>
-                    <div className="small text-muted">November 2015</div>
+                    <CardTitle className="mb-0">Temperature</CardTitle>
+                    <div className="small text-muted">Last Checked: {this.getTimeStamp()}</div>
                   </Col>
                   <Col sm="7" className="d-none d-sm-inline-block">
                     <Button color="primary" className="float-right"><i className="icon-cloud-download"></i></Button>
@@ -635,7 +852,7 @@ class Dashboard extends Component {
           </Col>
         </Row>
 
-        <Row>
+        {/* <Row>
           <Col xs="6" sm="6" lg="3">
             <Widget03 dataBox={() => ({ variant: 'facebook', friends: '89k', feeds: '459' })} >
               <div className="chart-wrapper">
@@ -706,7 +923,7 @@ class Dashboard extends Component {
               </div>
             </div>
           </Col>
-        </Row>
+        </Row> */}
 
         <Row>
           <Col>
